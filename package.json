@@ -1,0 +1,14 @@
+{
+  "name": "geometry-playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "python -m http.server 8000 --bind 127.0.0.1",
+    "build": "node tools/build.mjs",
+    "check": "node tools/check-rules.mjs",
+    "lab:new": "node tools/new-lab.mjs",
+    "voice": "python tools/generate-elements-voice.py && python tools/generate-all-voice.py",
+    "smoke": "node tools/smoke.mjs",
+    "test": "node --test"
+  }
+}

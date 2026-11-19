@@ -201,6 +201,109 @@
 .handle.chaos-vertex .dot { fill: var(--chaos-ink); }
 .handle.chaos-current .dot { fill: #e89836; }
 .fractal-cell { fill: #7c6cf0; }
+.board { --hue: var(--bubble, #7c6cf0); --hue-ink: color-mix(in srgb, var(--hue) 62%, #22182e); }
+.thales-circle { stroke: var(--hue-ink); stroke-opacity: .55; }
+.thales-half { fill-opacity: .24; }
+.thales-angle { stroke-width: 3.6; }
+.thales-small { stroke-dasharray: none; stroke-width: 2.4; }
+.thales-value, .thales-reading { text-anchor: middle; font-size: 14px; }
+.thales-reading { fill: var(--hue-ink); font-size: 16px; }
+.times-ring { stroke: var(--hue-ink); stroke-opacity: .5; }
+.times-chord { fill: none; stroke-width: 1; stroke-opacity: .62; }
+.times-chord.is-0 { stroke: var(--hue-ink); }
+.times-chord.is-1 { stroke: color-mix(in srgb, var(--hue) 70%, #2f6fb6); }
+.times-chord.is-2 { stroke: color-mix(in srgb, var(--hue) 55%, #1d8a7a); }
+.times-chord.is-3 { stroke: color-mix(in srgb, var(--hue) 55%, #c4512f); }
+.times-envelope { stroke: #e3a008; stroke-width: 3.4; }
+.times-dot { fill: var(--hue-ink); }
+.phyllo-disk { fill: color-mix(in srgb, var(--hue) 10%, white); stroke: color-mix(in srgb, var(--hue) 40%, white); stroke-width: 2; }
+.phyllo-seed { fill: color-mix(in srgb, var(--hue) 50%, #4a3a1c); }
+.phyllo-seed.is-arm-0 { fill: #d98b00; }
+.phyllo-seed.is-arm-1 { fill: #2f7fbf; }
+.penrose-tile.is-fat { fill: var(--hue); fill-opacity: .55; }
+.penrose-tile.is-thin { fill: #ffd43b; fill-opacity: .7; }
+.penrose-edge { fill: none; stroke: #3b2f4c; stroke-linejoin: round; }
+.penrose-base { fill: none; stroke: #fff; stroke-width: 1.2; stroke-dasharray: 4 3; }
+.penrose-frame { fill: none; stroke: var(--hue-ink); stroke-width: 2; }
+.penrose-golden { stroke: #d98b00; stroke-dasharray: 6 4; }
+.penrose-phi { fill: #a86a00; }
+.penrose-tick { text-anchor: middle; }
+.penrose-mark { fill: #ff7a45; stroke: #fff; stroke-width: 1.5; }
+.pick-dot { fill: #b9b2c6; }
+.pick-on { fill: #fff; stroke: var(--hue-ink); stroke-width: 2.4; }
+.pick-in { fill: var(--hue-ink); stroke: #fff; stroke-width: 1.5; }
+.pick-shape { fill: var(--hue); fill-opacity: .16; stroke: var(--hue-ink); }
+.pick-shape.is-crossed { fill: #ff7a45; fill-opacity: .14; stroke: #d0482c; stroke-dasharray: 7 5; }
+.hyper-disk { fill: color-mix(in srgb, var(--hue) 8%, white); }
+.hyper-tile { stroke: #fff; stroke-width: .8; stroke-linejoin: round; }
+.hyper-tile.is-tone-0, .hyper-flat.is-tone-0 { fill: color-mix(in srgb, var(--hue) 70%, white); }
+.hyper-tile.is-tone-1, .hyper-flat.is-tone-1 { fill: color-mix(in srgb, var(--hue) 40%, white); }
+.hyper-tile.is-tone-2, .hyper-flat.is-tone-2 { fill: color-mix(in srgb, var(--hue) 20%, #fff6d6); }
+.hyper-flat { stroke: var(--hue-ink); stroke-width: 2; stroke-linejoin: round; }
+.hyper-first { stroke: #e3a008; stroke-width: 3.4; }
+.hyper-rim { fill: none; stroke: var(--hue-ink); stroke-width: 2.4; }
+.bridges-water { fill: #d9ecf7; }
+.bridges-land { fill: #eef3e2; stroke: #9bb37a; stroke-width: 2; cursor: pointer; }
+.bridges-deck { stroke: #8a6a45; stroke-width: 11; stroke-linecap: round; }
+.bridges-hit { stroke: transparent; stroke-width: 28; stroke-linecap: round; }
+.bridges-bridge { cursor: pointer; outline: none; }
+.bridges-bridge.is-open .bridges-deck { stroke: #e3a008; }
+.bridges-bridge.is-used .bridges-deck { stroke: #cfc4b8; }
+.bridges-bridge:focus-visible .bridges-deck, .bridges-stop:focus-visible .bridges-dot { stroke: #4d96ff; }
+.bridges-walk { stroke: var(--hue-ink); stroke-width: 3; stroke-dasharray: 8 6; fill: none; pointer-events: none; }
+.bridges-stop { cursor: pointer; outline: none; }
+.bridges-dot { fill: #fff; stroke: var(--hue-ink); stroke-width: 2.5; }
+.bridges-stop.is-here .bridges-dot { fill: var(--hue); }
+.bridges-ring { fill: none; stroke: #6b9b5a; stroke-width: 3; }
+.bridges-ring.is-odd { stroke: #d0482c; stroke-dasharray: 5 4; }
+.bridges-label { text-anchor: middle; font: 800 16px var(--app-font-family); fill: #2c2338; pointer-events: none; }
+.jordan-curve { fill: none; stroke: var(--hue-ink); stroke-width: 2.6; stroke-linejoin: round; }
+.jordan-curve.is-revealed { fill: var(--hue); fill-opacity: .22; fill-rule: evenodd; }
+.jordan-ray { stroke-width: 2.6; }
+.jordan-hit { fill: #fff; stroke: #ff7a45; stroke-width: 2.4; }
+.delaunay-tri { fill: var(--hue); fill-opacity: .1; stroke: var(--hue-ink); stroke-width: 1.8; }
+.delaunay-tri.is-picked { fill-opacity: .28; }
+.delaunay-circle { fill: none; }
+.delaunay-cell { fill: none; stroke: #e3a008; stroke-width: 2; stroke-dasharray: 6 4; }
+.delaunay-center { fill: #e3a008; stroke: #fff; stroke-width: 1.5; }
+.gallery-room { fill: #fbf8f2; }
+.gallery-view { stroke: none; fill-opacity: .3; }
+.gallery-view.is-0 { fill: var(--hue); }
+.gallery-view.is-1 { fill: #e3a008; }
+.gallery-view.is-2 { fill: #2f7fbf; }
+.gallery-view.is-3 { fill: #1d8a7a; }
+.gallery-wall { fill: none; stroke: #3b2f4c; stroke-width: 3.2; stroke-linejoin: round; }
+.gallery-blind { fill: #d0482c; }
+.platonic-tile { stroke: var(--hue-ink); stroke-width: 2; stroke-linejoin: round; }
+.platonic-tile.is-0 { fill: color-mix(in srgb, var(--hue) 60%, white); }
+.platonic-tile.is-1 { fill: color-mix(in srgb, var(--hue) 36%, white); }
+.platonic-tile.is-2 { fill: color-mix(in srgb, var(--hue) 18%, #fff6d6); }
+.platonic-tile.is-crowded { fill: #ff7a45; fill-opacity: .4; stroke: #d0482c; }
+.platonic-vertex { fill: #3b2f4c; }
+.platonic-back { fill: none; stroke: var(--hue-ink); stroke-opacity: .3; stroke-width: 1.4; stroke-dasharray: 4 4; }
+.platonic-face { stroke: var(--hue-ink); stroke-width: 1.8; stroke-linejoin: round; }
+.platonic-verdict, .platonic-name { font-size: 14px; }
+.platonic-none { text-anchor: middle; font-size: 16px; fill: var(--hue-ink); }
+.net-table { fill: color-mix(in srgb, var(--hue) 8%, #f4efe6); }
+.net-face { fill: color-mix(in srgb, var(--hue) 34%, white); fill-opacity: .9; stroke: var(--hue-ink); stroke-width: 2; stroke-linejoin: round; }
+.net-face.is-base { fill: color-mix(in srgb, var(--hue) 62%, white); }
+.net-face.is-5 { fill: #ffe08a; }
+.flat-plane { fill: color-mix(in srgb, var(--hue) 10%, white); stroke: color-mix(in srgb, var(--hue) 45%, white); stroke-width: 1.6; }
+.flat-body { fill: var(--hue); fill-opacity: .14; stroke: var(--hue-ink); stroke-width: 2; }
+.flat-edge { stroke: var(--hue-ink); stroke-width: 2; stroke-linecap: round; }
+.flat-section { fill: #e3a008; fill-opacity: .35; stroke: #b07800; }
+.flat-window { fill: #fff; stroke: color-mix(in srgb, var(--hue) 40%, white); stroke-width: 2; }
+.flat-empty { text-anchor: middle; font-size: 14px; }
+.diag-edge { stroke: var(--hue-ink); stroke-opacity: .32; stroke-width: 1.2; }
+.diag-walk { stroke-dasharray: none; stroke-width: 2.6; }
+.diag-main { stroke-width: 3.6; }
+.diag-step { fill: var(--hue); fill-opacity: .12; stroke: var(--hue-ink); stroke-width: 1.4; }
+.diag-step.is-last { fill: #e3a008; fill-opacity: .3; }
+.theo-spoke.structural { stroke-opacity: .55; stroke-width: 1.4; }
+.diag-root { text-anchor: middle; }
+.dragon-path { fill: none; stroke-width: var(--dragon-width, 3px); stroke-linecap: round; stroke-linejoin: round; }
+.dragon-path.is-first { stroke: var(--hue-ink); }
+.dragon-path.is-second { stroke: #2f7fbf; }
 .globe { fill: #e5f3f0; }
 .rim { stroke: #28695e; stroke-width: 1.6; }
 .tree-branch { fill: none; stroke: #488a59; stroke-linecap: round; }

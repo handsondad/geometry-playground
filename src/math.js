@@ -123,11 +123,13 @@ export function diskTranslate(z, a) {
 
 /**
  * Regular {p,q} tiling of the Poincaré disk: p-gons, q around each vertex, grown by reflecting tiles across their
- * edges. Tiles whose edges are shorter than minEdge (Euclidean) stop growing.
+ * edges. Tiles whose edges are shorter than minEdge (Euclidean) stop growing. A shift first carries the central tile
+ * by that disk translation, so the tiling grows to the same on-screen detail wherever it is dragged.
  */
-export function hyperbolicTiling(p, q, minEdge = .02, limit = 2000) {
+export function hyperbolicTiling(p, q, minEdge = .02, limit = 2000, shift = pt(0, 0)) {
   const r = Math.sqrt(Math.cos(Math.PI / p + Math.PI / q) / Math.cos(Math.PI / p - Math.PI / q));
-  const first = { center: pt(0, 0), depth: 0, vertices: Array.from({ length: p }, (_, i) => rotate(pt(0, -r), 2 * Math.PI * i / p)) };
+  const first = { center: diskTranslate(pt(0, 0), shift), depth: 0,
+    vertices: Array.from({ length: p }, (_, i) => diskTranslate(rotate(pt(0, -r), 2 * Math.PI * i / p), shift)) };
   const key = c => `${Math.round(c.x * 1e5)},${Math.round(c.y * 1e5)}`;
   const seen = new Set([key(first.center)]), tiles = [first];
   for (let i = 0; i < tiles.length && tiles.length < limit; i++) {
@@ -303,3 +305,164 @@ export function penroseTriangles(depth) {
 /** Where the chord from angle θ to mθ on the unit circle touches its envelope, an epicycloid with m − 1 cusps. */
 export const timesTableEnvelope = (theta, m) =>
   pt((m * Math.cos(theta) + Math.cos(m * theta)) / (m + 1), (m * Math.sin(theta) + Math.sin(m * theta)) / (m + 1));
+
+const orient = (a, b, c) => cross(sub(b, a), sub(c, a));
+const onSegment = (p, a, b) => Math.abs(orient(a, b, p)) < 1e-9 && dot(sub(p, a), sub(p, b)) <= 1e-9;
+
+/** True when the open segments ab and cd cross at a single interior point. */
+export function segmentsCross(a, b, c, d) {
+  const d1 = orient(c, d, a), d2 = orient(c, d, b), d3 = orient(a, b, c), d4 = orient(a, b, d);
+  return d1 * d2 < 0 && d3 * d4 < 0;
+}
+
+/** No repeated vertices, no edge touching a non-adjacent edge, no edge folding back over its neighbour. */
+export function isSimplePolygon(polygon) {
+  const n = polygon.length;
+  if (n < 3 || polygonArea(polygon) < 1e-9) return false;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (dist(polygon[i], polygon[j]) < 1e-9) return false;
+      const a = polygon[i], b = polygon[(i + 1) % n], c = polygon[j], d = polygon[(j + 1) % n];
+      if (j === i + 1) { if (onSegment(d, a, b) || onSegment(a, c, d)) return false; }
+      else if (i === 0 && j === n - 1) { if (onSegment(c, a, b) || onSegment(b, c, d)) return false; }
+      else if (segmentsCross(a, b, c, d) || onSegment(c, a, b) || onSegment(d, a, b) || onSegment(a, c, d) || onSegment(b, c, d)) return false;
+    }
+  }
+  return true;
+}
+
+/** Points where the ray from p at `angle` crosses the polygon; a vertex on the ray counts as just above it. */
+export function rayCrossings(p, angle, polygon) {
+  const local = polygon.map(q => rotate(sub(q, p), -angle)), hits = [];
+  local.forEach((a, i) => {
+    const b = local[(i + 1) % local.length];
+    if ((a.y > 0) === (b.y > 0)) return;
+    const x = a.x + (b.x - a.x) * a.y / (a.y - b.y);
+    if (x > 0) hits.push(add(p, rotate(pt(x, 0), angle)));
+  });
+  return hits.sort((u, v) => dist(p, u) - dist(p, v));
+}
+
+export const insidePolygon = (p, polygon) => rayCrossings(p, 0, polygon).length % 2 === 1;
+
+const gcd = (a, b) => b ? gcd(b, a % b) : Math.abs(a);
+
+/** Counts the lattice points of a polygon with integer vertices: inside it by testing every point, on it edge by edge. */
+export function latticeCount(polygon) {
+  const boundaryPoints = polygon.flatMap((a, i) => {
+    const b = polygon[(i + 1) % polygon.length], steps = gcd(b.x - a.x, b.y - a.y);
+    return Array.from({ length: steps }, (_, k) => mix(a, b, k / steps));
+  });
+  const xs = polygon.map(p => p.x), ys = polygon.map(p => p.y), interiorPoints = [];
+  for (let x = Math.min(...xs); x <= Math.max(...xs); x++) {
+    for (let y = Math.min(...ys); y <= Math.max(...ys); y++) {
+      const p = pt(x, y);
+      if (!polygon.some((a, i) => onSegment(p, a, polygon[(i + 1) % polygon.length])) && insidePolygon(p, polygon)) interiorPoints.push(p);
+    }
+  }
+  return { area: polygonArea(polygon), interiorPoints, boundaryPoints, interior: interiorPoints.length, boundary: boundaryPoints.length };
+}
+
+export function circumcircle(a, b, c) {
+  const ab = sub(b, a), ac = sub(c, a), d = 2 * cross(ab, ac);
+  if (Math.abs(d) < 1e-12) return null;
+  const b2 = dot(ab, ab), c2 = dot(ac, ac);
+  const center = add(a, pt((ac.y * b2 - ab.y * c2) / d, (ab.x * c2 - ac.x * b2) / d));
+  return { center, r: dist(center, a) };
+}
+
+/** Bowyer–Watson Delaunay triangulation; returns index triples into `points`, skipping repeated points. */
+export function delaunay(points) {
+  const n = points.length;
+  if (n < 3) return [];
+  const xs = points.map(p => p.x), ys = points.map(p => p.y);
+  const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys), 1);
+  const mx = (Math.max(...xs) + Math.min(...xs)) / 2, my = (Math.max(...ys) + Math.min(...ys)) / 2;
+  const all = [...points, pt(mx - 60 * span, my - 40 * span), pt(mx + 60 * span, my - 40 * span), pt(mx, my + 60 * span)];
+  const make = t => ({ t, c: circumcircle(...t.map(i => all[i])) });
+  let triangles = [make([n, n + 1, n + 2])];
+  points.forEach((p, i) => {
+    if (points.slice(0, i).some(q => dist(p, q) < 1e-9)) return;
+    const bad = triangles.filter(({ c }) => c && dist(c.center, p) < c.r - 1e-9);
+    const edges = new Map();
+    for (const { t } of bad) {
+      for (let k = 0; k < 3; k++) {
+        const a = t[k], b = t[(k + 1) % 3], key = a < b ? `${a},${b}` : `${b},${a}`;
+        edges.set(key, edges.has(key) ? null : [a, b]);
+      }
+    }
+    triangles = triangles.filter(item => !bad.includes(item));
+    for (const edge of edges.values()) if (edge) triangles.push(make([edge[0], edge[1], i]));
+  });
+  return triangles.map(({ t }) => t).filter(t => t.every(i => i < n));
+}
+
+const rayHit = (p, d, polygon) => polygon.reduce((best, u, i) => {
+  const e = sub(polygon[(i + 1) % polygon.length], u), denom = cross(d, e);
+  if (Math.abs(denom) < 1e-12) return best;
+  const w = sub(u, p), t = cross(w, e) / denom, s = cross(w, d) / denom;
+  return t > 1e-9 && s >= -1e-9 && s <= 1 + 1e-9 ? Math.min(best, t) : best;
+}, Infinity);
+
+/** The region of a simple polygon seen from p inside it, swept by rays towards every corner and just past it. */
+export function visibilityPolygon(p, polygon) {
+  return polygon.flatMap(v => {
+    const a = Math.atan2(v.y - p.y, v.x - p.x);
+    return [a - 1e-5, a, a + 1e-5];
+  }).sort((a, b) => a - b).map(a => {
+    const d = pt(Math.cos(a), Math.sin(a));
+    return add(p, mul(d, rayHit(p, d, polygon)));
+  });
+}
+
+export const sees = (p, q, polygon) =>
+  !polygon.some((a, i) => segmentsCross(p, q, a, polygon[(i + 1) % polygon.length]));
+
+/** Degrees, odd vertices and, when every edge can be walked exactly once, one such trail (Hierholzer). */
+export function eulerTrail(count, edges) {
+  const degree = Array(count).fill(0);
+  for (const [u, v] of edges) { degree[u]++; degree[v]++; }
+  const odd = degree.flatMap((d, i) => d % 2 ? [i] : []);
+  const reach = new Set([edges[0]?.[0]]);
+  for (let grew = true; grew;) {
+    grew = false;
+    for (const [u, v] of edges) {
+      if (reach.has(u) !== reach.has(v)) { reach.add(u); reach.add(v); grew = true; }
+    }
+  }
+  const connected = edges.every(([u]) => reach.has(u));
+  if (!edges.length || !connected || (odd.length !== 0 && odd.length !== 2)) return { degree, odd, connected, trail: null };
+  const used = edges.map(() => false), stack = [{ v: odd[0] ?? edges[0][0], e: -1 }], done = [];
+  while (stack.length) {
+    const top = stack.at(-1), next = edges.findIndex((edge, i) => !used[i] && edge.includes(top.v));
+    if (next < 0) { done.push(stack.pop()); continue; }
+    used[next] = true;
+    const [a, b] = edges[next];
+    stack.push({ v: a === top.v ? b : a, e: next });
+  }
+  done.reverse();
+  return { degree, odd, connected, trail: { vertices: done.map(s => s.v), edges: done.slice(1).map(s => s.e) } };
+}
+
+/**
+ * A strip folded in half `folds` times, each crease opened to a right angle except the last, which opens to `unfold`:
+ * every fold doubles the strip, the second half being the first half reversed and turned about the end.
+ */
+export function dragonCurve(folds, unfold = Math.PI / 2) {
+  let points = [pt(0, 0), pt(1, 0)];
+  for (let k = 0; k < folds; k++) {
+    const end = points.at(-1), angle = k === folds - 1 ? unfold : Math.PI / 2;
+    points = [...points, ...points.slice(0, -1).reverse().map(p => add(end, rotate(sub(p, end), angle)))];
+  }
+  return points;
+}
+
+/** Spiral of Theodorus: right triangles with legs √k and 1, so the k-th spoke has length √k. */
+export function theodorus(count) {
+  const points = [pt(1, 0)];
+  while (points.length < count) {
+    const p = points.at(-1);
+    points.push(add(p, mul(perp(p), 1 / norm(p))));
+  }
+  return points;
+}

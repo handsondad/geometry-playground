@@ -31,12 +31,14 @@ export function myLab({ board, controls, stats, guide, records, lesson, signal, 
 画板坐标系固定为 `W = 640, H = 400`：
 
 - `line(a, b, cls)` / `infinite(a, b, cls)` / `circle(p, r, cls)` / `polygon(points, cls)` / `polyline(points, cls)` / `text(p, value, cls)`
+- `angleArc(vertex, a, b, r, cls)`：在顶点处画两条射线之间的小角弧（泰勒斯实验用它标 ∠ACB 和底角）。
 - `point(p, name, { key, kind })`：`kind` 可选 `'point'`、`'draggable'`、`'highlight'`、`'candidate'`、`'selected'`；传 `key` 后自动支持 `Tab` 聚焦与方向键移动。
 - `dragPoints(board, (key, p) => { ... }, selector)`：统一处理鼠标/触屏拖拽与键盘微调。
 - `slider(label, id, value, min, max, step, unit)`、`button(label, action, attrs)`、`metric(label, value)`。
 - `board.animate(selector)`：为描线要素执行 `strokeDashoffset` 描绘，为填充面执行渐显，为高亮/候选点执行微弹跳弹出，且自动遵守 `prefers-reduced-motion: reduce`。
 
 常用画板 CSS 类（`src/styles/lab.css`）：
+- 画板上的 `--hue`（等于展馆的 `--bubble`）和 `--hue-ink`（加深一档）供实验图形取色，新实验优先用它们，而不是写死颜色。
 - `structural`（深灰基础线）、`aux`（紫色虚线辅助圆/线）、`aux alt`（青色对比虚线）、`result`（高亮橙色结果线）、`shape`（紫色半透明区域）、`image-shape`（橙色变换像）。
 - 页面外壳的颜色跟着展馆走：页面根元素设置 `--bubble`，读数、滑块、按钮按下态、`.status` 和卡片边框都用它（`app.css` 派生出 `--hall`、`--hall-soft`、`--hall-line`、`--hall-ink`，并改写 `--border-color`）。新实验不要写死橙色或深色背景；空间实验（`space-*` 类）也是浅色画板，台词里说「金线 / 金点」的地方对应 `space-accent` / `space-point` 的金色。
 

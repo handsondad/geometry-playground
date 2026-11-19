@@ -163,6 +163,41 @@ export const platonicSolids = [
   return { id, vertices, faces, edges };
 });
 
+function axisTurn([x, y, z], angle) {
+  const c = Math.cos(angle), s = Math.sin(angle), t = 1 - c;
+  return [
+    [t * x * x + c, t * x * y - s * z, t * x * z + s * y],
+    [t * x * y + s * z, t * y * y + c, t * y * z - s * x],
+    [t * x * z - s * y, t * y * z + s * x, t * z * z + c],
+  ];
+}
+const apply = (m, p) => m.map(row => dotN(row, p));
+const compose = (m, n) => m.map(row => [0, 1, 2].map(j => row.reduce((sum, value, k) => sum + value * n[k][j], 0)));
+
+/**
+ * Folds a net of unit squares (grid cells [column, row], joined edge to edge) about every shared edge by `angle`,
+ * all creases turning the same way. Faces hang off cell 0 as a breadth-first tree.
+ */
+export function foldNet(cells, angle) {
+  const placed = [{ cell: 0, parent: -1, m: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], t: [0, 0, 0] }];
+  for (let i = 0; i < placed.length; i++) {
+    const { cell, m, t } = placed[i], [pc, pr] = cells[cell];
+    cells.forEach(([c, r], j) => {
+      if (Math.abs(c - pc) + Math.abs(r - pr) !== 1 || placed.some(face => face.cell === j)) return;
+      const w = [c - pc, r - pr, 0], axis = cross3(w, [0, 0, 1]), hinge = [(pc + c + 1) / 2, (pr + r + 1) / 2, 0];
+      const turn = axisTurn(axis, angle), shift = hinge.map((x, k) => x - apply(turn, hinge)[k]);
+      placed.push({ cell: j, parent: cell, m: compose(m, turn), t: apply(m, shift).map((x, k) => x + t[k]) });
+    });
+  }
+  const faces = placed.map(({ cell, parent, m, t }) => {
+    const [c, r] = cells[cell];
+    const corners = [[c, r, 0], [c + 1, r, 0], [c + 1, r + 1, 0], [c, r + 1, 0]].map(p => apply(m, p).map((x, k) => x + t[k]));
+    return { cell, parent, corners, center: [0, 1, 2].map(k => corners.reduce((sum, p) => sum + p[k], 0) / 4) };
+  });
+  const keys = new Set(faces.map(({ center }) => center.map(x => Math.round(x * 1e4)).join(',')));
+  return { faces, connected: faces.length === cells.length, distinct: keys.size };
+}
+
 export function ribbonLap(turns, twisted, side = 1) {
   const laps = twisted ? 2 : 1;
   const lap = Math.min(Math.floor(turns), laps - 1);

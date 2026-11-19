@@ -34,6 +34,21 @@ export const questionTitles = {
   'convex-hull': '橡皮筋包住一群点，哪些点能顶住它？',
   tesseract: '看不见第四个方向，怎么认出四维立方体？',
   'cube-growth': '再复制一次正方体，能多长出一维吗？',
+  thales: '为什么半圆里藏着一个直角？',
+  'times-table': '乘法表怎么连出一颗心？',
+  phyllotaxis: '向日葵的种子为什么转 137.5°？',
+  penrose: '有没有永远不重复的地砖？',
+  pick: '只数格点，能算出面积吗？',
+  'hyperbolic-tiling': '三块七边形围一圈，在哪里拼得上？',
+  'seven-bridges': '七座桥，能不重复地一次走完吗？',
+  jordan: '怎么知道自己在迷宫里面还是外面？',
+  delaunay: '一群点该怎么连成三角网？',
+  'art-gallery': '美术馆要请几个保安才看得住？',
+  platonic: '为什么正多面体只有五种？',
+  'cube-nets': '哪张展开图能折成正方体？',
+  flatland: '住在平面里的人，怎么看一个球？',
+  'cube-diagonal': '四维立方体的对角线有多长？',
+  'dragon-curve': '纸条一直对折，能折出什么？',
 };
 
 /** 小念刚刚遇到的事：问题卡片和问答页开头的场景 */
@@ -73,6 +88,21 @@ export const questionTriggers = {
   'convex-hull': '小念在木板上钉了一圈钉子，拿橡皮筋往外一套',
   tesseract: '小念看到一张「四维立方体」的图，大立方体里套着小立方体',
   'cube-growth': '小念把一根小棒复制一份连起来，拼成了正方形',
+  thales: '小念在半圆形的花坛边上随便站一个位置，看花坛直径的两头',
+  'times-table': '小念在圆盘上钉了一圈钉子，按乘法表一根根绕上毛线',
+  phyllotaxis: '小念凑近一朵向日葵，发现种子排成了一圈圈弯弯的螺旋',
+  penrose: '爸爸给小念看一张地砖照片，怎么找都找不到重复的花纹',
+  pick: '小念在钉板上用橡皮筋围了个形状，想知道它有多大',
+  'hyperbolic-tiling': '小念想用三块正七边形纸片围住一个角，怎么拼都拼不平',
+  'seven-bridges': '小念看到一张老城地图，河上架着七座桥',
+  jordan: '小念在一张弯弯绕绕的迷宫图上点了一个点',
+  delaunay: '小念想把地图上几个村子连成三角形的路网',
+  'art-gallery': '小念去美术馆，发现展厅像一把梳子，有好几个角落',
+  platonic: '小念拿一堆一样的正三角形纸片，想围出一个立体',
+  'cube-nets': '小念把一个纸盒拆开，摊成一张平平的展开图',
+  flatland: '爸爸讲了一个住在一张纸里的平面国的故事',
+  'cube-diagonal': '小念想知道，从一个盒子的一个角到对面的角，最远有多远',
+  'dragon-curve': '小念把一根纸条对折又对折，再展开，折痕弯弯曲曲',
 };
 
 const mathWorld = page => `https://mathworld.wolfram.com/${page}.html`;
@@ -84,19 +114,19 @@ const mathWorld = page => `https://mathworld.wolfram.com/${page}.html`;
 export const homeShowcase = [
   { id: 'mobius', hall: 'topology', play: ['mobius', '🧪 动手玩一玩'], name: '莫比乌斯带', en: 'MÖBIUS STRIP', source: ['Möbius Strip', mathWorld('MoebiusStrip')],
     hook: '纸条拧半圈再粘起来，就分不出正面和背面了。沿着边一直走，要绕两圈才回到起点。' },
-  { id: 'penrose', hall: 'mosaics', play: ['tiling', '🧪 自己铺一铺'], name: '彭罗斯镶嵌', en: 'PENROSE TILING', source: ['Penrose Tiles', mathWorld('PenroseTiles')],
+  { id: 'penrose', hall: 'mosaics', play: ['penrose', '🧪 一层层切小'], name: '彭罗斯镶嵌', en: 'PENROSE TILING', source: ['Penrose Tiles', mathWorld('PenroseTiles')],
     hook: '只用胖、瘦两种菱形就能铺满整个平面，却永远找不到一块能照抄平移的重复花纹。越切越细，胖砖和瘦砖的数量比越来越接近黄金比 1.618。' },
   { id: 'tesseract', hall: 'dimensions', play: ['tesseract', '🧪 动手玩一玩'], name: '四维超立方体', en: 'TESSERACT', source: ['Tesseract', mathWorld('Tesseract')],
     hook: '看不见第四个方向，却能看它投进三维世界的影子：两个立方体套在一起，转着转着里外互换。' },
-  { id: 'cardioid', hall: 'curves', play: ['cycloid', '🧪 滚一个圆试试'], name: '乘法表里的心形线', en: 'TIMES-TABLE CARDIOID', source: ['Cardioid', mathWorld('Cardioid')],
+  { id: 'cardioid', hall: 'curves', play: ['times-table', '🧪 换个乘数连一连'], name: '乘法表里的心形线', en: 'TIMES-TABLE CARDIOID', source: ['Cardioid', mathWorld('Cardioid')],
     hook: '圆上排好 120 个点，把第 k 个点连到第 2k 个点，一根根直线竟围出一颗心。换成乘 3 就是肾形线，阳光斜照进咖啡杯，杯底那道亮弯线正是它的一半。' },
-  { id: 'hyperbolic', hall: 'non-euclid', play: ['disk', '🧪 在圆盘里画直线'], name: '双曲七边形镶嵌', en: 'HYPERBOLIC {7,3} TILING', source: ['Poincaré Hyperbolic Disk', mathWorld('PoincareHyperbolicDisk')],
+  { id: 'hyperbolic', hall: 'non-euclid', play: ['hyperbolic-tiling', '🧪 把七边形拖向边缘'], name: '双曲七边形镶嵌', en: 'HYPERBOLIC {7,3} TILING', source: ['Poincaré Hyperbolic Disk', mathWorld('PoincareHyperbolicDisk')],
     hook: '平面上三块正七边形拼不满一圈，在双曲世界里却刚刚好。圆盘里每一块其实一样大，只是越靠边看起来越小。埃舍尔的《圆极限》就画在这样的圆盘里。' },
   { id: 'koch', hall: 'fractal', play: ['koch', '🧪 动手玩一玩'], name: '科赫雪花', en: 'KOCH SNOWFLAKE', source: ['Koch Snowflake', mathWorld('KochSnowflake')],
     hook: '每一轮都给每条边长出一个小尖角。周长可以无限长，围住的面积却永远超不过一个上限。' },
-  { id: 'platonic', hall: 'solids', play: ['euler-holes', '🧪 数一数顶点、棱和面'], name: '五种柏拉图立体', en: 'PLATONIC SOLIDS', source: ['Platonic Solid', mathWorld('PlatonicSolid')],
+  { id: 'platonic', hall: 'solids', play: ['platonic', '🧪 围一围顶点'], name: '五种柏拉图立体', en: 'PLATONIC SOLIDS', source: ['Platonic Solid', mathWorld('PlatonicSolid')],
     hook: '每个面都是同样的正多边形、每个顶点都一个样的凸立体，全世界只有五种。欧几里得把这件事写在了《几何原本》的最后一条命题里。' },
-  { id: 'phyllotaxis', hall: 'transforms', play: ['transform', '🧪 自己转一转'], name: '向日葵的黄金角', en: 'GOLDEN ANGLE', source: ['Phyllotaxis', mathWorld('Phyllotaxis')],
+  { id: 'phyllotaxis', hall: 'transforms', play: ['phyllotaxis', '🧪 自己转一转'], name: '向日葵的黄金角', en: 'GOLDEN ANGLE', source: ['Phyllotaxis', mathWorld('Phyllotaxis')],
     hook: '每颗新种子都比上一颗多转 137.5°，再往外挪一点点。只靠这一条规则，就排出一左一右两组螺旋，条数还正好是相邻的两个斐波那契数。' },
   { id: 'voronoi', hall: 'computational', play: ['voronoi', '🧪 拖一拖站点'], name: '沃罗诺伊图', en: 'VORONOI DIAGRAM', source: ['Voronoi Diagram', mathWorld('VoronoiDiagram')],
     hook: '每个格子里的点，都离格子里那个站点最近。1854 年伦敦闹霍乱，斯诺医生按走路远近，圈出了离宽街水泵最近的街区，用的就是这个想法。' },
@@ -119,6 +149,9 @@ const difficulty = {
   sphere: 2, disk: 3, 'hyperbolic-triangle': 3, mobius: 1, 'euler-holes': 2,
   koch: 2, sierpinski: 1, 'fractal-tree': 1, 'chaos-game': 3, voronoi: 2, 'convex-hull': 1,
   tesseract: 3, 'cube-growth': 2,
+  thales: 2, 'times-table': 1, phyllotaxis: 2, penrose: 3, pick: 2, 'hyperbolic-tiling': 3,
+  'seven-bridges': 1, jordan: 2, delaunay: 3, 'art-gallery': 2, platonic: 2, 'cube-nets': 1,
+  flatland: 1, 'cube-diagonal': 2, 'dragon-curve': 1,
 };
 export const questionDifficulty = lesson => difficulty[lesson.id] ?? 2;
 export const questionTrigger = lesson => questionTriggers[lesson.id] ?? lesson.intro;
@@ -126,15 +159,15 @@ export const questionTrigger = lesson => questionTriggers[lesson.id] ?? lesson.i
 /** 小念眼里每座展馆在问什么：首页卡片上的一句话 */
 export const hallHooks = {
   euclid: '不量长度能画等边三角形吗？没有量角器怎么平分角？勾股定理怎么拼出来？',
-  solids: '正方体能切出六边形吗？一摞纸推斜了，体积会变吗？',
-  curves: '两颗钉子怎么画椭圆？车轮上的点走出什么线？光斑为什么会变形？',
-  transforms: '照镜子会变大吗？台球怎么借边反弹？铁轨为什么在远处相遇？',
-  mosaics: '为什么地砖常见六边形？蜂窝里藏着什么三角形？',
-  'non-euclid': '三角形能有三个直角吗？平行线能不止一条吗？',
-  topology: '莫比乌斯带剪开会变成两条吗？挖一个洞，什么数会变？',
-  fractal: '雪花的周长能无限长吗？乱跳的点怎么排出整齐的洞？',
-  computational: '去哪家店最近？橡皮筋套住一圈钉子，哪些钉子顶着它？',
-  dimensions: '四维立方体长什么样？多复制一次，能长出一维吗？',
+  solids: '正方体能切出六边形吗？为什么正多面体只有五种？哪张展开图能折成盒子？',
+  curves: '两颗钉子怎么画椭圆？车轮上的点走出什么线？乘法表怎么连出一颗心？',
+  transforms: '照镜子会变大吗？台球怎么借边反弹？向日葵为什么转 137.5°？',
+  mosaics: '为什么地砖常见六边形？有永不重复的地砖吗？数格点能算面积吗？',
+  'non-euclid': '三角形能有三个直角吗？平行线能不止一条吗？七边形在哪里铺得满？',
+  topology: '莫比乌斯带剪开会变成两条吗？七座桥能一次走完吗？',
+  fractal: '雪花的周长能无限长吗？乱跳的点怎么排出整齐的洞？纸条怎么折出龙？',
+  computational: '去哪家店最近？点该怎么连成三角网？美术馆要几个保安？',
+  dimensions: '四维立方体长什么样？平面国的人怎么看球？四维对角线有多长？',
 };
 
 const featured = {

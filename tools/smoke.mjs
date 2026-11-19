@@ -74,8 +74,10 @@ const spatialLabs = {
   tesseract: ['#four-slice', 0, '正方体'],
   'conic-slices': ['#conic-angle', 68, '双曲线'],
 };
-const addedLabs = new Set(['shear-stack', 'cycloid', 'dual-tiling', 'euler-holes', 'convex-hull', 'cube-growth', 'perspective-rail', 'chaos-game']);
-const sourcedLabs = new Set(['perspective-rail', 'conic-slices', 'chaos-game']);
+const expansionLabs = ['thales', 'times-table', 'phyllotaxis', 'penrose', 'pick', 'hyperbolic-tiling', 'seven-bridges', 'jordan',
+  'delaunay', 'art-gallery', 'platonic', 'cube-nets', 'flatland', 'cube-diagonal', 'dragon-curve'];
+const addedLabs = new Set(['shear-stack', 'cycloid', 'dual-tiling', 'euler-holes', 'convex-hull', 'cube-growth', 'perspective-rail', 'chaos-game', ...expansionLabs]);
+const sourcedLabs = new Set(['perspective-rail', 'conic-slices', 'chaos-game', ...expansionLabs]);
 
 await build({ root: ROOT, logLevel: 'warn' });
 const { server, port } = await startServer();
@@ -460,6 +462,74 @@ try {
       await slider('#chaos-fraction', 65);
       assert.equal(await ev('document.querySelectorAll(".chaos-copy").length'), 3);
       assert.equal(await dotCount(), 501);
+    } else if (id === 'thales') {
+      assert.equal((await statValues())[2], '圆内');
+      await click('on');
+      assert.deepEqual((await statValues()).slice(0, 2), ['90.0°', '90.0°']);
+      await click('outside');
+      assert.ok(parseFloat((await statValues())[0]) < 90, 'outside the circle the angle is acute');
+    } else if (id === 'times-table') {
+      await slider('#times-m', 6);
+      assert.equal((await statValues())[1], '5 个');
+    } else if (id === 'phyllotaxis') {
+      await slider('#phyllo-angle', 120);
+      assert.ok(await ev(statsContain('排成 3 条直线')));
+    } else if (id === 'penrose') {
+      assert.deepEqual((await statValues()).slice(0, 3), ['1440', '890', '1.6180']);
+      await slider('#penrose-depth', 2);
+      assert.deepEqual((await statValues()).slice(0, 3), ['30', '20', '1.5000']);
+    } else if (id === 'pick') {
+      assert.deepEqual(await statValues(), ['26', '21', '35.5', '35.5']);
+      await ev('document.querySelector("[data-point]").focus()');
+      await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowLeft' });
+      const [interior, boundary, formula, area] = await statValues();
+      assert.equal(formula, area, 'Pick holds after a keyboard move');
+      assert.equal(Number(formula), Number(interior) + Number(boundary) / 2 - 1);
+    } else if (id === 'hyperbolic-tiling') {
+      assert.equal((await statValues())[1], '72.0°');
+      await slider('#tile-q', 4);
+      assert.ok(await ev(statsContain('平面')));
+    } else if (id === 'seven-bridges') {
+      await click('bridges-7');
+      assert.ok(await ev('document.querySelector("[data-action=bridges-trail]").disabled'));
+      assert.equal((await statValues())[2], '4 块');
+      await click('bridges-8');
+      assert.equal((await statValues())[2], '2 块');
+    } else if (id === 'jordan') {
+      assert.ok(await ev(statsContain('5 次')) && await ev(statsContain('里面')));
+      await click('blob');
+      await slider('#jordan-angle', 200);
+      assert.ok(await ev(statsContain('单数')), 'turning the ray keeps the parity');
+    } else if (id === 'delaunay') {
+      assert.equal((await statValues())[2], '0');
+      await ev('document.querySelector("[data-point]").focus()');
+      for (let i = 0; i < 6; i++) await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', modifiers: 8 });
+      assert.equal((await statValues())[2], '0', 'moving a site keeps every circumcircle empty');
+    } else if (id === 'art-gallery') {
+      assert.equal((await statValues())[1], '100%');
+      await slider('#gallery-guards', 1);
+      assert.ok(parseFloat((await statValues())[1]) < 100);
+    } else if (id === 'platonic') {
+      await click('platonic-4');
+      await slider('#platonic-around', 3);
+      assert.ok(await ev(statsContain('正方体')));
+      assert.ok(await ev('document.querySelectorAll(".platonic-face").length === 3'));
+    } else if (id === 'cube-nets') {
+      assert.ok(await ev(statsContain('缺 1 个面')));
+      await click('zigzag');
+      assert.ok(await ev(statsContain('6 个（共 6 块）')));
+    } else if (id === 'flatland') {
+      await slider('#flat-height', 150);
+      assert.ok(await ev(statsContain('三角形')));
+      await click('sphere');
+      await slider('#flat-height', 120);
+      assert.ok(await ev(statsContain('什么也没有')) || (await statValues())[2] === '0');
+    } else if (id === 'cube-diagonal') {
+      await slider('#diag-n', 8);
+      assert.ok(await ev(statsContain('2.828')) && await ev(statsContain('256')));
+    } else if (id === 'dragon-curve') {
+      await slider('#dragon-folds', 5);
+      assert.deepEqual(await statValues(), ['5', '32', '31', '0']);
     }
     if (spatial) {
       const [input, finalValue, expected] = spatialLabs[id];

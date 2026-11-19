@@ -1,4 +1,4 @@
-import { clamp, dist, mul, sub } from './math.js';
+import { add, clamp, cross, dist, mul, sub } from './math.js';
 
 export const W = 640, H = 400;
 export const xy = p => `${p.x.toFixed(3)},${p.y.toFixed(3)}`;
@@ -14,6 +14,11 @@ export function point(p, name = '', { key, kind = 'point' } = {}) {
 export function infinite(a, b, cls = 'structural') {
   const d = mul(sub(b, a), 1400 / dist(a, b));
   return line(sub(a, d), sub(a, mul(d, -1)), cls);
+}
+/** The smaller arc of radius r at vertex between the rays towards a and b. */
+export function angleArc(vertex, a, b, r, cls = 'result') {
+  const u = mul(sub(a, vertex), r / dist(a, vertex)), v = mul(sub(b, vertex), r / dist(b, vertex));
+  return `<path d="M${xy(add(vertex, u))}A${r} ${r} 0 0 ${cross(u, v) > 0 ? 1 : 0} ${xy(add(vertex, v))}" class="${cls}"/>`;
 }
 export const metric = (label, value) => `<div class="metric"><span>${label}</span><strong>${value}</strong></div>`;
 export const button = (label, action, attrs = '') => `<button type="button" data-action="${action}" ${attrs}>${label}</button>`;
@@ -35,7 +40,7 @@ export function makeBoard(container, name) {
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       [...drawing.querySelectorAll(selector)].slice(0, 14).forEach((el, i) => {
         const delay = i * 52;
-        if (el.matches('.angle-fill, .proof-bridge, .proof-active, .fractal-cell, .service-active, .paving-tile')) {
+        if (el.matches('.angle-fill, .proof-bridge, .proof-active, .fractal-cell, .service-active, .paving-tile, .fade-in')) {
           el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 480, delay, easing: 'ease-out', fill: 'backwards' });
         } else if (typeof el.getTotalLength === 'function') {
           const length = el.getTotalLength();

@@ -3,12 +3,25 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "python -m http.server 8000 --bind 127.0.0.1",
-    "build": "node tools/build.mjs",
+    "dev": "vite --host 127.0.0.1 --port 8000",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 8000",
+    "typecheck": "tsc --noEmit",
     "check": "node tools/check-rules.mjs",
     "lab:new": "node tools/new-lab.mjs",
     "voice": "python tools/generate-elements-voice.py && python tools/generate-all-voice.py",
     "smoke": "node tools/smoke.mjs",
     "test": "node --test"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.4.1",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
   }
 }

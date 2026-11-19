@@ -14,8 +14,9 @@ VOICES = {
 
 NODE_COLLECT = r"""
 import { halls } from './src/catalog.js';
-import { hubChats, hallChats, geometryWiki, geometryTalks } from './src/geometry-story-data.js';
+import { hallChats, geometryWiki, geometryTalks } from './src/geometry-story-data.js';
 import { labTalks } from './src/lab-talks.js';
+import { challengeCheer, challengeHint } from './src/question-catalog.js';
 
 const items = [];
 const add = (who, text) => {
@@ -23,7 +24,6 @@ const add = (who, text) => {
   if (clean) items.push({ who, text: clean });
 };
 
-for (const [n, d] of hubChats) { add('nian', n); add('dad', d); }
 for (const [n, d] of Object.values(hallChats)) { add('nian', n); add('dad', d); }
 for (const w of geometryWiki) {
   add('dad', `${w.scientist}的故事：${w.title}。${w.story} ${w.homeLab}`);
@@ -37,11 +37,11 @@ for (const turns of Object.values(labTalks)) {
 }
 for (const hall of halls) {
   for (const l of hall.lessons) {
-    add('nian', `太棒啦！我搞懂「${l.name}」的秘密啦！`);
+    add('nian', challengeCheer(l));
     add('dad', l.idea);
   }
 }
-add('dad', '先别急着选，再看看画板或点「演示这轮」试试看！');
+add('dad', challengeHint);
 
 console.log(JSON.stringify(items));
 """

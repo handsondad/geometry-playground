@@ -12,8 +12,9 @@ import { fileURLToPath } from 'node:url';
 import { halls } from '../src/catalog.js';
 import { elementsTalks } from '../src/elements-talks.js';
 import { labTalks } from '../src/lab-talks.js';
-import { hubChats, hallChats, geometryWiki, geometryTalks } from '../src/geometry-story-data.js';
+import { hallChats, geometryWiki, geometryTalks } from '../src/geometry-story-data.js';
 import { voiceManifest } from '../src/voice-manifest.js';
+import { challengeCheer, challengeHint, homeShowcase } from '../src/question-catalog.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC_DIR = path.join(ROOT, 'src');
@@ -62,6 +63,18 @@ export function checkAllRules() {
       }
     }
   }
+  // React 外壳（.ts/.tsx）互相导入不写后缀，导入原生 JS 模块时必须写 .js
+  for (const file of walkFiles(SRC_DIR, f => /\.tsx?$/.test(f))) {
+    const content = fs.readFileSync(file, 'utf8');
+    for (const match of content.matchAll(importRe)) {
+      const spec = match[1];
+      const target = path.resolve(path.dirname(file), spec);
+      if (/\.(css|js)$/.test(spec) ? fs.existsSync(target) : ['.ts', '.tsx'].some(ext => fs.existsSync(target + ext))) continue;
+      errors.push(fs.existsSync(`${target}.js`)
+        ? `[导入后缀] ${rel(file)} 导入原生 JS 模块 "${spec}" 时必须写明 .js 后缀`
+        : `[导入缺失] ${rel(file)} 导入了不存在的文件 "${spec}"`);
+    }
+  }
 
   for (const pureFile of ['math.js', 'spatial-math.js']) {
     const p = path.join(SRC_DIR, pureFile);
@@ -108,7 +121,14 @@ export function checkAllRules() {
     }
   }
 
-  if (hubChats.length < 3) errors.push('[首页对话] hubChats 至少需要 3 组开场对话');
+  if (new Set(homeShowcase.map(star => star.hall)).size !== halls.length) errors.push('[首页轮播] homeShowcase 需要覆盖全部展馆');
+  if (new Set(homeShowcase.map(star => star.id)).size !== homeShowcase.length) errors.push('[首页轮播] homeShowcase 的 id 重复');
+  for (const star of homeShowcase) {
+    if (!hallIds.has(star.hall)) errors.push(`[首页轮播] "${star.id}" 的展馆 "${star.hall}" 不存在`);
+    if (!lessonIds.has(star.play?.[0]) || !star.play[1]?.trim()) errors.push(`[首页轮播] "${star.id}" 的游乐场入口无效`);
+    if (!/^https:\/\//.test(star.source?.[1] ?? '') || !star.source[0]?.trim()) errors.push(`[首页轮播] "${star.id}" 缺少资料出处`);
+    if (!star.name?.trim() || !star.hook?.trim() || !star.en?.trim()) errors.push(`[首页轮播] "${star.id}" 缺少名字或一句介绍`);
+  }
 
   for (const hall of halls) {
     if (!hallChats[hall.id] || hallChats[hall.id].length !== 2) {
@@ -140,7 +160,6 @@ export function checkAllRules() {
   }
 
   const clipLines = [];
-  for (const [n, d] of hubChats) clipLines.push(['nian', n], ['dad', d]);
   for (const [n, d] of Object.values(hallChats)) clipLines.push(['nian', n], ['dad', d]);
   for (const w of geometryWiki) clipLines.push(['dad', `${w.scientist}的故事：${w.title}。${w.story} ${w.homeLab}`]);
   for (const t of geometryTalks) {
@@ -150,8 +169,8 @@ export function checkAllRules() {
   for (const turns of Object.values(labTalks)) {
     for (const turn of turns) clipLines.push(['nian', turn.nian], ['dad', turn.dad]);
   }
-  for (const l of lessons) clipLines.push(['nian', `太棒啦！我搞懂「${l.name}」的秘密啦！`], ['dad', l.idea]);
-  clipLines.push(['dad', '先别急着选，再看看画板或点「演示这轮」试试看！']);
+  for (const l of lessons) clipLines.push(['nian', challengeCheer(l)], ['dad', l.idea]);
+  clipLines.push(['dad', challengeHint]);
 
   for (const [who, text] of clipLines) {
     const hash = voiceManifest[`${who}|${text.trim()}`];

@@ -77,6 +77,7 @@ export function symmetryInk({ board, controls, stats, signal, notify }) {
     `<div class="control-row">${button('镜像', 'mirror', 'aria-pressed="false"')}${button('撤销上一笔', 'undo')}${button('清空', 'reset')}</div>
     <p class="lab-note">用鼠标或手指在圆内画。也可 Tab 进入画板，按方向键移动笔尖、空格开始或结束一笔。</p>`;
   const input = controls.querySelector('input'), { svg } = board;
+  svg.classList.add('ink-board');
   svg.setAttribute('tabindex', '0');
   const limit = p => { const d = sub(p, center), r = norm(d); return r > radius - 4 ? add(center, mul(d, (radius - 4) / r)) : p; };
   function draw() {

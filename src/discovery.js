@@ -1,6 +1,5 @@
-import { pt, add, sub, mul, norm, dist, cross, rotate, hyperbolicAngles, geodesic, treeLevels, interiorAngle, cornerTile, pythagorasFigure } from './math.js';
+import { pt, add, sub, mul, norm, dist, cross, rotate, hyperbolicAngles, geodesic, treeLevels, interiorAngle, cornerTile } from './math.js';
 import { W, H, button, circle, line, metric, point, polygon, slider, text, xy, dragPoints } from './board.js';
-import { proofPanel } from './proof-panel.js';
 
 const rad = n => n * Math.PI / 180;
 const deg = n => n * 180 / Math.PI;
@@ -149,41 +148,4 @@ export function hyperbolicTriangle({ board, controls, stats, signal }) {
     draw();
     board.animate('.shape');
   };
-}
-
-const proofSteps = [
-  ['在三条边上作正方形。', '∠A 是直角，因此 BC 是斜边。三个正方形的面积分别是 AB²、AC² 和 BC²。'],
-  ['从 A 向下画垂线，分开大正方形。', '过 A 向 BC 作垂线，并延长到大正方形的对边。现在大正方形分成了两个长方形。'],
-  ['左边的正方形和长方形等积。', '两个高亮三角形各有两条等长的对应边，夹角都是 ∠ABC + 90°，所以全等。一个和左边正方形同底同高，另一个和左边长方形同底同高；两块四边形的面积都是相应三角形的两倍。'],
-  ['右边也一样，两块长方形拼成大正方形。', '在右侧重复同样的全等论证，右边正方形也与对应长方形等积。把两个等积关系相加，得到 AB² + AC² = BC²。'],
-];
-
-export function pythagoras({ board, controls, stats, signal, guide }) {
-  let step = 0;
-  const b = pt(244, 224), c = pt(396, 224);
-  controls.innerHTML = slider('改变直角三角形：∠B', 'pythagoras-angle', 42, 27, 63, 1, '°');
-  const input = controls.querySelector('input');
-  const reveal = i => { step = i; draw(); board.animate('.proof-bridge, .proof-active, .proof-piece, .aux'); };
-  const update = proofPanel(guide, proofSteps, reveal, signal);
-  function draw() {
-    const angle = Number(input.value);
-    const f = pythagorasFigure(b, c, rad(angle));
-    const highlight = step >= 2 ? step - 2 : -1;
-    const aArt = polygon(f.left, 'proof-piece proof-left') + polygon(f.right, 'proof-piece proof-right') + polygon(f.hypotenuse, 'proof-outline');
-    const rectangles = step ? f.rectangles.map((p, i) =>
-      polygon(p, `proof-piece proof-${i === 0 ? 'left' : 'right'}${highlight === i ? ' proof-active' : ''}`)).join('') + line(f.a, f.g, 'aux') : '';
-    const bridge = highlight < 0 ? '' : (highlight ? f.rightBridge : f.leftBridge).map(p => polygon(p, 'proof-bridge')).join('');
-    const u = mul(sub(b, f.a), 12 / dist(f.a, b)), v = mul(sub(c, f.a), 12 / dist(f.a, c));
-    const rightAngle = polygon([f.a, add(f.a, u), add(add(f.a, u), v), add(f.a, v)], 'proof-outline');
-    board.draw(aArt + rectangles + polygon([f.a, b, c], 'proof-outline') + bridge + rightAngle +
-      point(f.a, 'A') + point(b, 'B') + point(c, 'C'));
-    setReadout(input, `${angle}°`);
-    const total = 100, left = total * Math.cos(rad(angle)) ** 2, whole = n => n.toFixed(2);
-    stats.innerHTML = metric('AB² + AC²（相对面积）', `${whole(left)} + ${whole(total - left)}`) +
-      metric('BC²（定为 100）', whole(total));
-    update(step);
-  }
-  controls.addEventListener('input', draw, { signal });
-  draw();
-  return (_, index) => reveal(index);
 }

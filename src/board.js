@@ -35,7 +35,7 @@ export function makeBoard(container, name) {
       if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       [...drawing.querySelectorAll(selector)].slice(0, 14).forEach((el, i) => {
         const delay = i * 52;
-        if (el.matches('.angle-fill, .proof-bridge, .proof-active, .fractal-cell, .service-active, .ribbon-panel, .paving-tile')) {
+        if (el.matches('.angle-fill, .proof-bridge, .proof-active, .fractal-cell, .service-active, .paving-tile')) {
           el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 480, delay, easing: 'ease-out', fill: 'backwards' });
         } else if (typeof el.getTotalLength === 'function') {
           const length = el.getTotalLength();

@@ -34,11 +34,16 @@ function notifySpeaking(line) {
   listeners.forEach(fn => fn(line));
 }
 
+const voiceUrl = path => `${import.meta.env.BASE_URL}voice/${path}`;
+
+/** 《几何原本》卷 I 的问答单独录在 public/voice/elements/，round 从 1 数 */
+export const elementsClipUrl = (id, round, who) => voiceUrl(`elements/${id}-${round}-${who}.mp3`);
+
 export function clipUrlFor(who, rawText, explicitSrc) {
   if (explicitSrc) return explicitSrc;
   const key = `${who}|${String(rawText ?? '').trim()}`;
   const hash = voiceManifest[key];
-  return hash ? new URL(`../public/voice/clips/${hash}.mp3`, import.meta.url) : null;
+  return hash ? voiceUrl(`clips/${hash}.mp3`) : null;
 }
 
 const canSynth = () => typeof window !== 'undefined' && 'speechSynthesis' in window;

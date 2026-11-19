@@ -11,6 +11,8 @@ export const perp = a => pt(-a.y, a.x);
 export const rotate = (a, radians) => add(mul(a, Math.cos(radians)), mul(perp(a), Math.sin(radians)));
 export const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 export const area = ([a, b, c]) => Math.abs(cross(sub(b, a), sub(c, a))) / 2;
+export const polygonArea = points => Math.abs(points.reduce((sum, p, i) => sum + cross(p, points[(i + 1) % points.length]), 0)) / 2;
+export const perimeter = points => points.reduce((sum, p, i) => sum + dist(p, points[(i + 1) % points.length]), 0);
 
 export function intersections(a, b) {
   if (a.r !== undefined && b.r !== undefined) {
@@ -82,16 +84,68 @@ export function geodesic(p, direction) {
   return { center, radius: Math.sqrt(s - 1), ends: [add(base, offset), sub(base, offset)] };
 }
 
+/** Angle at disk point a between the geodesics towards b and c. */
+export function geodesicAngle(a, b, c) {
+  const tangent = z => {
+    // (z − a) / (1 − conjugate(a) z) sends a to the disk center.
+    const u = sub(z, a), re = 1 - dot(a, z), im = cross(a, z);
+    return pt(u.x * re - u.y * im, u.y * re + u.x * im);
+  };
+  const u = tangent(b), v = tangent(c);
+  return Math.atan2(Math.abs(cross(u, v)), dot(u, v));
+}
+
+/** The circle through disk points u and v that meets the boundary at right angles; null when it is a diameter. */
+export function geodesicThrough(u, v) {
+  const det = cross(u, v);
+  if (Math.abs(det) < 1e-9) return null;
+  const ku = (dot(u, u) + 1) / 2, kv = (dot(v, v) + 1) / 2;
+  const center = pt((ku * v.y - kv * u.y) / det, (kv * u.x - ku * v.x) / det);
+  return { center, radius: Math.sqrt(dot(center, center) - 1) };
+}
+
+/** Hyperbolic reflection of z in the line through u and v: inversion in that circle, or a mirror in the diameter. */
+export function geodesicReflect(z, u, v) {
+  const circle = geodesicThrough(u, v);
+  if (!circle) {
+    const along = norm(u) > norm(v) ? u : v, w = mul(along, 1 / norm(along));
+    return sub(mul(w, 2 * dot(z, w)), z);
+  }
+  const offset = sub(z, circle.center);
+  return add(circle.center, mul(offset, circle.radius ** 2 / dot(offset, offset)));
+}
+
+/** Hyperbolic translation of the disk that carries the center to a: (z + a) / (1 + conjugate(a) z). */
+export function diskTranslate(z, a) {
+  const top = add(z, a), bottom = pt(1 + dot(a, z), cross(a, z)), size = dot(bottom, bottom);
+  return pt((top.x * bottom.x + top.y * bottom.y) / size, (top.y * bottom.x - top.x * bottom.y) / size);
+}
+
+/**
+ * Regular {p,q} tiling of the Poincaré disk: p-gons, q around each vertex, grown by reflecting tiles across their
+ * edges. Tiles whose edges are shorter than minEdge (Euclidean) stop growing.
+ */
+export function hyperbolicTiling(p, q, minEdge = .02, limit = 2000) {
+  const r = Math.sqrt(Math.cos(Math.PI / p + Math.PI / q) / Math.cos(Math.PI / p - Math.PI / q));
+  const first = { center: pt(0, 0), depth: 0, vertices: Array.from({ length: p }, (_, i) => rotate(pt(0, -r), 2 * Math.PI * i / p)) };
+  const key = c => `${Math.round(c.x * 1e5)},${Math.round(c.y * 1e5)}`;
+  const seen = new Set([key(first.center)]), tiles = [first];
+  for (let i = 0; i < tiles.length && tiles.length < limit; i++) {
+    const { center, vertices, depth } = tiles[i];
+    vertices.forEach((u, k) => {
+      const v = vertices[(k + 1) % p];
+      if (dist(u, v) < minEdge) return;
+      const image = geodesicReflect(center, u, v);
+      if (seen.has(key(image))) return;
+      seen.add(key(image));
+      tiles.push({ center: image, depth: depth + 1, vertices: vertices.map(z => geodesicReflect(z, u, v)).reverse() });
+    });
+  }
+  return tiles;
+}
+
 export function hyperbolicAngles(vertices) {
-  const angles = vertices.map((a, i) => {
-    const tangent = b => {
-      // (b − a) / (1 − conjugate(a) b) sends a to the disk center.
-      const u = sub(b, a), re = 1 - dot(a, b), im = cross(a, b);
-      return pt(u.x * re - u.y * im, u.y * re + u.x * im);
-    };
-    const u = tangent(vertices[(i + 1) % 3]), v = tangent(vertices[(i + 2) % 3]);
-    return Math.atan2(Math.abs(cross(u, v)), dot(u, v));
-  });
+  const angles = vertices.map((a, i) => geodesicAngle(a, vertices[(i + 1) % 3], vertices[(i + 2) % 3]));
   if (angles.reduce((sum, angle) => sum + angle, 0) >= Math.PI - 1e-10 ||
       vertices.some((p, i) => dist(p, vertices[(i + 1) % 3]) < 1e-8)) return null;
   return angles;
@@ -116,6 +170,24 @@ export function cornerTile(center, radius, sides, heading) {
     points.push(add(points[i], rotate(pt(radius, 0), heading + i * 2 * Math.PI / sides)));
   }
   return points;
+}
+
+export function pythagorasDissection(side, angle) {
+  const a = side / (1 + Math.tan(angle)), b = side - a;
+  const offsets = [
+    [pt(0, 0), pt(a, 0), pt(0, b)],
+    [pt(0, 0), pt(0, a), pt(-b, 0)],
+    [pt(0, 0), pt(-a, 0), pt(0, -b)],
+    [pt(0, 0), pt(0, -a), pt(b, 0)],
+  ];
+  const sources = [pt(0, 0), pt(side, 0), pt(side, side), pt(0, side)];
+  const targets = [pt(0, a), pt(side, 0), pt(a, side), pt(a, a)];
+  const pieces = offsets.map((piece, i) => ({
+    from: piece.map(p => add(sources[i], p)),
+    to: piece.map(p => add(targets[i], p)),
+  }));
+  const square = (lo, hi) => [pt(lo, lo), pt(hi, lo), pt(hi, hi), pt(lo, hi)];
+  return { pieces, center: pieces.map(({ from }) => from[1]), corners: [square(0, a), square(a, side)] };
 }
 
 export function pythagorasFigure(b, c, angle) {
@@ -187,3 +259,47 @@ export const angleAt = (origin, a, b) => {
   const u = sub(a, origin), v = sub(b, origin);
   return Math.atan2(Math.abs(cross(u, v)), dot(u, v));
 };
+
+export const goldenRatio = (1 + Math.sqrt(5)) / 2;
+export const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+
+/** Vogel's sunflower model: seed n turns n golden angles and sits √n from the middle. */
+export const vogelSpiral = (count, angle = goldenAngle) =>
+  Array.from({ length: count }, (_, n) => rotate(pt(Math.sqrt(n), 0), n * angle));
+
+/** The two spiral families the eye picks out among the outer seeds: their most common nearest-neighbour index gaps. */
+export function spiralFamilies(points) {
+  const counts = new Map();
+  for (let n = Math.floor(points.length * .75); n < points.length; n++) {
+    const near = points.map((p, k) => [dist(p, points[n]), k]).filter(([, k]) => k !== n).sort((a, b) => a[0] - b[0]).slice(0, 2);
+    for (const [, k] of near) counts.set(Math.abs(k - n), (counts.get(Math.abs(k - n)) ?? 0) + 1);
+  }
+  return [...counts].sort((a, b) => b[1] - a[1]).slice(0, 2).map(([gap]) => gap).sort((a, b) => a - b);
+}
+
+/**
+ * Robinson half-tiles of the rhomb Penrose tiling, deflated `depth` times from a sun of ten triangles in the unit
+ * circle. Kind 0 is half a thin rhomb (36° at a), kind 1 half a fat rhomb (108° at a); ab and ac are rhomb sides.
+ */
+export function penroseTriangles(depth) {
+  let tiles = Array.from({ length: 10 }, (_, i) => {
+    let b = rotate(pt(1, 0), (2 * i - 1) * Math.PI / 10), c = rotate(pt(1, 0), (2 * i + 1) * Math.PI / 10);
+    if (i % 2 === 0) [b, c] = [c, b];
+    return { kind: 0, a: pt(0, 0), b, c };
+  });
+  for (let n = 0; n < depth; n++) {
+    tiles = tiles.flatMap(({ kind, a, b, c }) => {
+      if (kind === 0) {
+        const p = mix(a, b, 1 / goldenRatio);
+        return [{ kind: 0, a: c, b: p, c: b }, { kind: 1, a: p, b: c, c: a }];
+      }
+      const q = mix(b, a, 1 / goldenRatio), r = mix(b, c, 1 / goldenRatio);
+      return [{ kind: 1, a: r, b: c, c: a }, { kind: 1, a: q, b: r, c: b }, { kind: 0, a: r, b: q, c: a }];
+    });
+  }
+  return tiles;
+}
+
+/** Where the chord from angle θ to mθ on the unit circle touches its envelope, an epicycloid with m − 1 cusps. */
+export const timesTableEnvelope = (theta, m) =>
+  pt((m * Math.cos(theta) + Math.cos(m * theta)) / (m + 1), (m * Math.sin(theta) + Math.sin(m * theta)) / (m + 1));

@@ -39,13 +39,15 @@ npm run lab:new -- <hall> <id> "<中文标题>" --write
 - 纯几何公式放入 `src/math.js`（或独立纯函数导出），并在 `tests/` 下补充断言。
 - 在 `src/labs/<id>.js` 实现实验逻辑：
   - 使用 `makeBoard`、`dragPoints`、`slider`、`button`、`metric` 等共享原语；
-  - 必须返回一个 `demo(kind, ...args)` 回调，供顶部 `StageStrip` 三轮问答切换时更新画板状态并调用 `board.animate(...)`。
+  - 必须返回一个 `demo(kind, ...args)` 回调：问答页 `#q/<id>` 的动画在爸爸开口时、游乐场 `#play/<id>` 的「摆出画面」按钮被点击时，都用对应那一轮的 `scene` 调用它，更新画板状态并调用 `board.animate(...)`。
+  - 同一个实验会挂载两次：问答页里只读（`interactive: false`，画板不接收拖动），游乐场里可操作（`interactive: true`）。不要假设页面上一定有操作台或挑战区。
 
 ### 第 3 步：完善小念与爸爸的对话、小挑战和百宝箱
 
 1. **`src/custom-labs.js`**：补全 `tag`、`intro`、`idea`、`question`、`choices`、`answer`。
 2. **`src/lab-talks.js`**：编写 3 轮贴合儿童口吻的 `nian` / `dad` 对话与 3 个不同的 `scene` 参数。
-3. **`src/geometry-story-data.js`（可选扩充）**：若新实验背后有著名数学家故事与安全的家庭纸笔/日常小实验，可向 `geometryWiki` 追加一张卡片（`homeLab` 以 `🏠 ` 开头，`relatedLabId` 指向 `<id>`），或在 `geometryTalks` 追加一条问答。
+3. **`src/question-catalog.js`**：给同一个 id 补一个小念口吻的问题标题（`questionTitles`）、一句他刚遇到的生活场景（`questionTriggers`）和难度 1–3（入门 / 进阶 / 挑战）。展馆页按难度分组，问答页顶部显示这句场景。
+4. **`src/geometry-story-data.js`（可选扩充）**：若新实验背后有著名数学家故事与安全的家庭纸笔/日常小实验，可向 `geometryWiki` 追加一张卡片（`homeLab` 以 `🏠 ` 开头，`relatedLabId` 指向 `<id>`），或在 `geometryTalks` 追加一条问答。
 
 ### 第 4 步：合成标准离线双人语音
 
@@ -66,4 +68,4 @@ npm run smoke -- <id>
 npm run build
 ```
 
-确保规则守卫全绿、单元测试通过、无头浏览器中 3 轮动画均正常触发且无 `NaN`、无 JS 异常与移动端横向溢出。
+确保规则守卫全绿、单元测试通过、无头浏览器中问答动画的 3 幕与游乐场的 3 个「摆出画面」均正常触发且无 `NaN`、无 JS 异常与移动端横向溢出。`npm run build` 会先跑 TypeScript 类型检查；`npm run smoke` 会自己先打包，检查的是 `dist/` 里的成品。

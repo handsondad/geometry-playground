@@ -3,47 +3,6 @@ import { W, H, button, circle, line, infinite, metric, point, polygon, polyline,
 
 const radians = degrees => degrees * Math.PI / 180;
 const center = pt(W / 2, H / 2);
-const range = (n, fn) => Array.from({ length: n }, (_, i) => fn(i));
-
-export function sphere({ board, controls, stats, signal }) {
-  const radius = 145, tilt = radians(24);
-  const project = ([lat, lon]) => {
-    const [phi, theta] = [radians(lat), radians(lon)];
-    const x = Math.cos(phi) * Math.sin(theta), y = Math.cos(phi) * Math.cos(theta), z = Math.sin(phi);
-    return { x: center.x + radius * x, y: center.y - radius * (z * Math.cos(tilt) - y * Math.sin(tilt)), depth: y * Math.cos(tilt) + z * Math.sin(tilt) };
-  };
-  const graticule = [...range(12, i => range(181, j => [j - 90, i * 30])), ...[-60, -30, 0, 30, 60].map(lat => range(361, lon => [lat, lon]))];
-  const grid = graticule.map(curve => {
-    const path = curve.map(project).reduce((state, p) => ({
-      prev: p.depth >= 0,
-      d: state.d + (p.depth >= 0 ? `${state.prev ? 'L' : 'M'}${xy(p)}` : ''),
-    }), { prev: false, d: '' }).d;
-    return `<path d="${path}" class="globe-grid"/>`;
-  }).join('');
-  controls.innerHTML = slider('经度差 Δλ', 'longitude', 90, 10, 160, 1, '°') +
-    `<div class="control-row">${[30, 90, 150].map(n => button(`${n}°`, n)).join('')}</div>`;
-  const input = controls.querySelector('input'), output = controls.querySelector('output');
-  function draw() {
-    const n = Number(input.value), a = -n / 2, b = n / 2;
-    const boundary = [...range(25, i => [90 - i * 90 / 24, a]), ...range(n + 1, i => [0, a + i]), ...range(25, i => [i * 90 / 24, b])].map(project);
-    board.draw(circle(center, radius, 'globe') + grid + polygon(boundary) + point(project([90, 0]), 'N') +
-      point(project([0, a]), 'A') + point(project([0, b]), 'B'));
-    output.value = `${n}°`;
-    stats.innerHTML = metric('三角形内角和', `${180 + n}°`) + metric('比平面多', `${n}°`);
-  }
-  controls.addEventListener('input', draw, { signal });
-  controls.addEventListener('click', event => {
-    const action = event.target.closest('button')?.dataset.action;
-    if (action) { input.value = action; draw(); }
-  }, { signal });
-  draw();
-  return (_, value) => {
-    input.value = value;
-    draw();
-    board.animate('.shape');
-  };
-}
-
 export function disk({ board, controls, stats, signal }) {
   const r = 148, a = .45, p = pt(0, -a), map = q => add(center, mul(q, r));
   const limit = Math.atan2(2 * a, 1 - a * a);

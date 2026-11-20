@@ -8,7 +8,8 @@ import { area3, compareCubeCuts, cubeCut, cubeSection, dotN, hypercube, rotateXW
 import { elementsTalks } from '../src/elements-talks.js';
 import { labTalks } from '../src/lab-talks.js';
 import { hallChats, geometryWiki, geometryTalks } from '../src/geometry-story-data.js';
-import { voiceManifest } from '../src/voice-manifest.js';
+import { voiceClips } from '../src/voice-manifest.js';
+import { clipId } from '../src/voice-key.js';
 import { comparisonInverse, comparisonPoint, comparisonTriangles } from '../src/curvature-math.js';
 import { squareSlice } from '../src/labs/shear-stack.js';
 import { rollingPoint } from '../src/labs/cycloid.js';
@@ -19,8 +20,15 @@ import { pinholePoint } from '../src/labs/perspective-rail.js';
 import { conicSection } from '../src/labs/conic-slices.js';
 import { chaosTrace } from '../src/labs/chaos-game.js';
 import { challengeCheer, challengeHint, featuredQuestions, homeShowcase, questionTitle } from '../src/question-catalog.js';
+import { loadLabMode } from '../src/lab-modes.js';
 
 const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-8, `${a} ≈ ${b}`);
+
+test('every lab id lazily resolves to its lab function', async () => {
+  for (const { id } of halls.flatMap(h => h.lessons)) {
+    assert.equal(typeof await loadLabMode(id), 'function', id);
+  }
+});
 
 test('one triangle has excess on the sphere and deficit in the disk, shrinking toward the flat sum', () => {
   for (const x of [-.86, 0, .86]) {
@@ -321,8 +329,8 @@ test('all labs, halls, wiki stories, and Q&As have dialogue coverage and bundled
   lines.push(['dad', challengeHint]);
 
   for (const [who, text] of lines) {
-    const hash = voiceManifest[`${who}|${text.trim()}`];
-    assert.ok(hash, `missing voiceManifest entry for ${who}: ${text}`);
+    const hash = clipId(who, text);
+    assert.ok(voiceClips.has(hash), `missing voice clip entry for ${who}: ${text}`);
     const path = new URL(`../public/voice/clips/${hash}.mp3`, import.meta.url);
     assert.ok((await stat(path)).size > 1024, `clip ${hash}.mp3`);
   }

@@ -1,4 +1,5 @@
-import { voiceManifest } from './voice-manifest.js';
+import { voiceClips } from './voice-manifest.js';
+import { clipId } from './voice-key.js';
 
 const soundKey = 'geometry-playground:sound:v1';
 let soundEnabled = (() => {
@@ -7,6 +8,7 @@ let soundEnabled = (() => {
 })();
 
 let audio = null;
+let upcoming = null;
 let tones = null;
 let run = 0;
 let currentLine = null;
@@ -41,9 +43,8 @@ export const elementsClipUrl = (id, round, who) => voiceUrl(`elements/${id}-${ro
 
 export function clipUrlFor(who, rawText, explicitSrc) {
   if (explicitSrc) return explicitSrc;
-  const key = `${who}|${String(rawText ?? '').trim()}`;
-  const hash = voiceManifest[key];
-  return hash ? voiceUrl(`clips/${hash}.mp3`) : null;
+  const id = clipId(who, rawText);
+  return voiceClips.has(id) ? voiceUrl(`clips/${id}.mp3`) : null;
 }
 
 const canSynth = () => typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -71,13 +72,37 @@ function synth(who, text, token) {
   });
 }
 
+/** 上一句还在播时先把下一句的录音下载好，两句之间不再停顿等网络 */
+function preload(line) {
+  const src = line ? clipUrlFor(line.who, line.text, line.src) : null;
+  if (!src || upcoming?.src === src) return;
+  dropUpcoming();
+  const el = new Audio();
+  el.preload = 'auto';
+  el.src = src;
+  upcoming = { src, el };
+}
+
+function dropUpcoming() {
+  if (!upcoming) return;
+  upcoming.el.removeAttribute('src');
+  upcoming = null;
+}
+
+function audioFor(src) {
+  if (upcoming?.src !== src) return new Audio(src);
+  const { el } = upcoming;
+  upcoming = null;
+  return el;
+}
+
 function playOne(line, token) {
   const text = String(line.text ?? '').trim();
   const src = clipUrlFor(line.who, text, line.src);
   if (!src) return synth(line.who, text, token);
   return new Promise(resolve => {
     if (token !== run) return resolve(false);
-    const el = new Audio(src);
+    const el = audioFor(src);
     audio = el;
     let settled = false;
     const finish = ok => {
@@ -102,6 +127,7 @@ function playOne(line, token) {
 
 export function stopSpeaking() {
   run += 1;
+  dropUpcoming();
   if (audio) {
     const prev = audio;
     audio = null;
@@ -117,10 +143,12 @@ export function stopSpeaking() {
 export async function say(...lines) {
   stopSpeaking();
   const token = run;
-  for (const line of lines) {
+  for (const [i, line] of lines.entries()) {
     if (token !== run) return false;
     notifySpeaking(line);
-    const ok = await playOne(line, token);
+    const playing = playOne(line, token);
+    preload(lines[i + 1]);
+    const ok = await playing;
     if (!ok || token !== run) {
       if (token === run) notifySpeaking(null);
       return false;

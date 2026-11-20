@@ -5,7 +5,7 @@ import { challengeCheer, challengeHint } from "../question-catalog.js";
 import { Bubble } from "../components/Bubble";
 import { PageTop } from "../components/PageTop";
 import { actTitle } from "../components/QuestionFilm";
-import { MissingPage } from "./QuestionPage";
+import { MissingPage } from "../components/MissingPage";
 import { propositionByNumber, propositionOf, themeOf, topicById, topics, turnsFor, type Topic } from "../lib/catalog";
 import { markLit, storageNotice, useProgress } from "../lib/progress";
 import { href } from "../lib/route";

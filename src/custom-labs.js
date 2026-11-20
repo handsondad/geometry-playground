@@ -1,31 +1,7 @@
-import { chaosGameLab } from './labs/chaos-game.js';
-import { conicSlicesLab } from './labs/conic-slices.js';
-import { perspectiveRailLab } from './labs/perspective-rail.js';
-import { cubeGrowthLab } from './labs/cube-growth.js';
-import { convexHullLab } from './labs/convex-hull.js';
-import { eulerHolesLab } from './labs/euler-holes.js';
-import { dualTilingLab } from './labs/dual-tiling.js';
-import { cycloidLab } from './labs/cycloid.js';
-import { shearStackLab } from './labs/shear-stack.js';
-import { thalesLab } from './labs/thales.js';
-import { timesTableLab } from './labs/times-table.js';
-import { phyllotaxisLab } from './labs/phyllotaxis.js';
-import { penroseLab } from './labs/penrose.js';
-import { pickLab } from './labs/pick.js';
-import { hyperbolicTilingLab } from './labs/hyperbolic-tiling.js';
-import { sevenBridgesLab } from './labs/seven-bridges.js';
-import { jordanLab } from './labs/jordan.js';
-import { delaunayLab } from './labs/delaunay.js';
-import { artGalleryLab } from './labs/art-gallery.js';
-import { platonicLab } from './labs/platonic.js';
-import { cubeNetsLab } from './labs/cube-nets.js';
-import { flatlandLab } from './labs/flatland.js';
-import { cubeDiagonalLab } from './labs/cube-diagonal.js';
-import { dragonCurveLab } from './labs/dragon-curve.js';
-
 const mathWorld = (title, page) => [`Wolfram MathWorld · ${title}`, `https://mathworld.wolfram.com/${page}.html`];
 // Extension registry for labs scaffolded via `npm run lab:new -- ... --write`.
-// Each entry: { hall: '<hallId>', lesson: { id, name, tag, intro, idea, question, choices, answer }, mode }
+// Each entry: { hall: '<hallId>', lesson: { id, name, tag, intro, idea, question, choices, answer }, load }
+// load 返回实验函数的 Promise：实验代码单独拆包，打开问答页或游乐场时才下载
 export const customLabs = [
   {
     hall: 'solids',
@@ -39,7 +15,7 @@ export const customLabs = [
       choices: ['变大', '不变', '变小'],
       answer: 1,
     },
-    mode: shearStackLab,
+    load: () => import('./labs/shear-stack.js').then(m => m.shearStackLab),
   },
   {
     hall: 'curves',
@@ -53,7 +29,7 @@ export const customLabs = [
       choices: ['有尖点的曲线', '水平直线', '一个圆'],
       answer: 1,
     },
-    mode: cycloidLab,
+    load: () => import('./labs/cycloid.js').then(m => m.cycloidLab),
   },
   {
     hall: 'mosaics',
@@ -67,7 +43,7 @@ export const customLabs = [
       choices: ['3 个', '4 个', '6 个'],
       answer: 2,
     },
-    mode: dualTilingLab,
+    load: () => import('./labs/dual-tiling.js').then(m => m.dualTilingLab),
   },
   {
     hall: 'topology',
@@ -81,7 +57,7 @@ export const customLabs = [
       choices: ['还是 0', '变成 1', '随三角形数增大'],
       answer: 0,
     },
-    mode: eulerHolesLab,
+    load: () => import('./labs/euler-holes.js').then(m => m.eulerHolesLab),
   },
   {
     hall: 'computational',
@@ -95,7 +71,7 @@ export const customLabs = [
       choices: ['面积减少', '边界不变', '一定多一个顶点'],
       answer: 1,
     },
-    mode: convexHullLab,
+    load: () => import('./labs/convex-hull.js').then(m => m.convexHullLab),
   },
   {
     hall: 'dimensions',
@@ -109,7 +85,7 @@ export const customLabs = [
       choices: ['8 条', '16 条', '32 条'],
       answer: 1,
     },
-    mode: cubeGrowthLab,
+    load: () => import('./labs/cube-growth.js').then(m => m.cubeGrowthLab),
   },
   {
     hall: 'transforms',
@@ -124,7 +100,7 @@ export const customLabs = [
       answer: 1,
       sources: [['MIT CSAIL · 小孔成像与线性透视', 'https://people.csail.mit.edu/fredo/comp-photo-book/02-fundamentals-02-pinhole-image-formation-and-linear-perspective.html']],
     },
-    mode: perspectiveRailLab,
+    load: () => import('./labs/perspective-rail.js').then(m => m.perspectiveRailLab),
   },
   {
     hall: 'curves',
@@ -139,7 +115,7 @@ export const customLabs = [
       answer: 0,
       sources: [['OpenStax · Calculus Volume 2：圆锥曲线', 'https://openstax.org/books/calculus-volume-2/pages/7-5-conic-sections']],
     },
-    mode: conicSlicesLab,
+    load: () => import('./labs/conic-slices.js').then(m => m.conicSlicesLab),
   },
   {
     hall: 'fractal',
@@ -154,7 +130,7 @@ export const customLabs = [
       answer: 2,
       sources: [['Wolfram MathWorld · Chaos Game', 'https://mathworld.wolfram.com/ChaosGame.html']],
     },
-    mode: chaosGameLab,
+    load: () => import('./labs/chaos-game.js').then(m => m.chaosGameLab),
   },
   {
     hall: 'euclid',
@@ -169,7 +145,7 @@ export const customLabs = [
       answer: 0,
       sources: [mathWorld('Thales\' Theorem', 'ThalesTheorem')],
     },
-    mode: thalesLab,
+    load: () => import('./labs/thales.js').then(m => m.thalesLab),
   },
   {
     hall: 'curves',
@@ -184,7 +160,7 @@ export const customLabs = [
       answer: 1,
       sources: [mathWorld('Cardioid', 'Cardioid')],
     },
-    mode: timesTableLab,
+    load: () => import('./labs/times-table.js').then(m => m.timesTableLab),
   },
   {
     hall: 'transforms',
@@ -199,7 +175,7 @@ export const customLabs = [
       answer: 0,
       sources: [mathWorld('Phyllotaxis', 'Phyllotaxis')],
     },
-    mode: phyllotaxisLab,
+    load: () => import('./labs/phyllotaxis.js').then(m => m.phyllotaxisLab),
   },
   {
     hall: 'mosaics',
@@ -214,7 +190,7 @@ export const customLabs = [
       answer: 1,
       sources: [mathWorld('Penrose Tiles', 'PenroseTiles')],
     },
-    mode: penroseLab,
+    load: () => import('./labs/penrose.js').then(m => m.penroseLab),
   },
   {
     hall: 'mosaics',
@@ -229,7 +205,7 @@ export const customLabs = [
       answer: 0,
       sources: [mathWorld('Pick\'s Theorem', 'PicksTheorem')],
     },
-    mode: pickLab,
+    load: () => import('./labs/pick.js').then(m => m.pickLab),
   },
   {
     hall: 'non-euclid',
@@ -244,7 +220,7 @@ export const customLabs = [
       answer: 0,
       sources: [mathWorld('Hyperbolic Tiling', 'HyperbolicTiling')],
     },
-    mode: hyperbolicTilingLab,
+    load: () => import('./labs/hyperbolic-tiling.js').then(m => m.hyperbolicTilingLab),
   },
   {
     hall: 'topology',
@@ -259,7 +235,7 @@ export const customLabs = [
       answer: 1,
       sources: [mathWorld('Königsberg Bridge Problem', 'KoenigsbergBridgeProblem')],
     },
-    mode: sevenBridgesLab,
+    load: () => import('./labs/seven-bridges.js').then(m => m.sevenBridgesLab),
   },
   {
     hall: 'topology',
@@ -274,7 +250,7 @@ export const customLabs = [
       answer: 0,
       sources: [mathWorld('Jordan Curve Theorem', 'JordanCurveTheorem')],
     },
-    mode: jordanLab,
+    load: () => import('./labs/jordan.js').then(m => m.jordanLab),
   },
   {
     hall: 'computational',
@@ -289,7 +265,7 @@ export const customLabs = [
       answer: 0,
       sources: [mathWorld('Delaunay Triangulation', 'DelaunayTriangulation')],
     },
-    mode: delaunayLab,
+    load: () => import('./labs/delaunay.js').then(m => m.delaunayLab),
   },
   {
     hall: 'computational',
@@ -304,7 +280,7 @@ export const customLabs = [
       answer: 1,
       sources: [mathWorld('Art Gallery Theorem', 'ArtGalleryTheorem')],
     },
-    mode: artGalleryLab,
+    load: () => import('./labs/art-gallery.js').then(m => m.artGalleryLab),
   },
   {
     hall: 'solids',
@@ -319,7 +295,7 @@ export const customLabs = [
       answer: 1,
       sources: [mathWorld('Platonic Solid', 'PlatonicSolid')],
     },
-    mode: platonicLab,
+    load: () => import('./labs/platonic.js').then(m => m.platonicLab),
   },
   {
     hall: 'solids',
@@ -334,7 +310,7 @@ export const customLabs = [
       answer: 1,
       sources: [mathWorld('Hexomino', 'Hexomino')],
     },
-    mode: cubeNetsLab,
+    load: () => import('./labs/cube-nets.js').then(m => m.cubeNetsLab),
   },
   {
     hall: 'dimensions',
@@ -349,7 +325,7 @@ export const customLabs = [
       answer: 1,
       sources: [mathWorld('Cross Section', 'CrossSection')],
     },
-    mode: flatlandLab,
+    load: () => import('./labs/flatland.js').then(m => m.flatlandLab),
   },
   {
     hall: 'dimensions',
@@ -364,7 +340,7 @@ export const customLabs = [
       answer: 1,
       sources: [mathWorld('Hypercube', 'Hypercube'), mathWorld('Theodorus Spiral', 'TheodorusSpiral')],
     },
-    mode: cubeDiagonalLab,
+    load: () => import('./labs/cube-diagonal.js').then(m => m.cubeDiagonalLab),
   },
   {
     hall: 'fractal',
@@ -379,6 +355,6 @@ export const customLabs = [
       answer: 2,
       sources: [mathWorld('Dragon Curve', 'DragonCurve')],
     },
-    mode: dragonCurveLab,
+    load: () => import('./labs/dragon-curve.js').then(m => m.dragonCurveLab),
   },
 ];

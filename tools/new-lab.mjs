@@ -118,9 +118,8 @@ fs.writeFileSync(labFile, renderLabModule(id, title, ident), 'utf8');
 
 const customLabsPath = path.join(ROOT, 'src', 'custom-labs.js');
 const customText = fs.readFileSync(customLabsPath, 'utf8');
-const importLine = `import { ${ident} } from './labs/${id}.js';\n`;
-const entrySnippet = `  {\n    hall: '${hallId}',\n    lesson: {\n      id: '${id}',\n      name: '${title}',\n      tag: 'TODO·几何概念',\n      intro: 'TODO(agent): 一句话告诉孩子这个实验怎么动手玩。',\n      idea: 'TODO(agent): 用爸爸的口吻解释背后的几何原理。',\n      question: 'TODO(agent): 设计一道检验观察的小挑战？',\n      choices: ['选项 A', '选项 B（示例正解）', '选项 C'],\n      answer: 1,\n    },\n    mode: ${ident},\n  },\n];`;
-const nextCustom = `${importLine}${customText.replace(/\];\s*$/, entrySnippet)}\n`;
+const entrySnippet = `  {\n    hall: '${hallId}',\n    lesson: {\n      id: '${id}',\n      name: '${title}',\n      tag: 'TODO·几何概念',\n      intro: 'TODO(agent): 一句话告诉孩子这个实验怎么动手玩。',\n      idea: 'TODO(agent): 用爸爸的口吻解释背后的几何原理。',\n      question: 'TODO(agent): 设计一道检验观察的小挑战？',\n      choices: ['选项 A', '选项 B（示例正解）', '选项 C'],\n      answer: 1,\n    },\n    load: () => import('./labs/${id}.js').then(m => m.${ident}),\n  },\n];`;
+const nextCustom = `${customText.replace(/\];\s*$/, entrySnippet)}\n`;
 fs.writeFileSync(customLabsPath, nextCustom, 'utf8');
 
 const talksPath = path.join(ROOT, 'src', 'lab-talks.js');

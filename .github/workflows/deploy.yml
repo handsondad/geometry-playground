@@ -26,6 +26,9 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+      - name: Install CJK fonts for smoke
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-noto-cjk
+      - run: npm run smoke
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -434,6 +434,9 @@ svg.avatar { display: inline-block; width: 1.6em; height: 1.6em; vertical-align:
 .progress-row a { min-height: 32px; display: inline-flex; align-items: center; }
 .progress-heard { flex: none; font-size: .8rem; color: var(--text-secondary); }
 .missing { display: grid; justify-items: center; gap: 14px; padding-top: 80px; text-align: center; }
+.page-loading { min-height: 60vh; display: grid; place-items: center; color: var(--text-secondary); animation: page-loading-in .2s .3s both; }
+@keyframes page-loading-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .page-loading { animation: none; } }
 
 /* ───────── 窄屏 ───────── */
 @media (max-width: 1000px) {

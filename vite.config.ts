@@ -10,7 +10,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules/react")) return "react";
-          if (id.endsWith("voice-manifest.js")) return "voice-manifest";
         }
       }
     }

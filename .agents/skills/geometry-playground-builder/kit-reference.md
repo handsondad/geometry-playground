@@ -22,7 +22,7 @@ export function myLab({ board, controls, stats, guide, records, lesson, signal, 
 }
 ```
 
-`useLab(lesson, interactive)` 负责创建画板、调用 `labMode(id)` 并在卸载时 `abort()`。它要求这些容器（id 沿用旧版，巡检脚本也靠它们定位）：`#canvas` 画板、`#controls` 操作台、`#stats` 读数、`#lab-guide` 证明步骤、`#lab-records` 截面记录、`#notice` 提示。使用它的组件要以实验 id 作为 `key`，换实验时整块重建。
+`useLab(lesson, interactive)` 负责创建画板、通过 `requireLabMode(id)` 取到按需下载的实验函数并在卸载时 `abort()`；实验代码还没下载完时它会挂起渲染（React Suspense），`App` 已在外层包好 `<Suspense>`。它要求这些容器（id 沿用旧版，巡检脚本也靠它们定位）：`#canvas` 画板、`#controls` 操作台、`#stats` 读数、`#lab-guide` 证明步骤、`#lab-records` 截面记录、`#notice` 提示。使用它的组件要以实验 id 作为 `key`，换实验时整块重建。
 
 ---
 
@@ -71,8 +71,6 @@ export function myLab({ board, controls, stats, guide, records, lesson, signal, 
 ## 5. `src/custom-labs.js` 注册格式
 
 ```js
-import { cycloidLab } from './labs/cycloid.js';
-
 export const customLabs = [
   {
     hall: 'curves',
@@ -86,7 +84,8 @@ export const customLabs = [
       choices: ['1 个', '2 个', '3 个'],
       answer: 0,
     },
-    mode: cycloidLab,
+    // 实验代码单独拆包：写成返回实验函数的 loader，不要在文件顶部静态 import
+    load: () => import('./labs/cycloid.js').then(m => m.cycloidLab),
   },
 ];
 ```

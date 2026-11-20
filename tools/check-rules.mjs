@@ -13,7 +13,8 @@ import { halls } from '../src/catalog.js';
 import { elementsTalks } from '../src/elements-talks.js';
 import { labTalks } from '../src/lab-talks.js';
 import { hallChats, geometryWiki, geometryTalks } from '../src/geometry-story-data.js';
-import { voiceManifest } from '../src/voice-manifest.js';
+import { voiceClips } from '../src/voice-manifest.js';
+import { clipId } from '../src/voice-key.js';
 import { challengeCheer, challengeHint, homeShowcase } from '../src/question-catalog.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -173,8 +174,8 @@ export function checkAllRules() {
   clipLines.push(['dad', challengeHint]);
 
   for (const [who, text] of clipLines) {
-    const hash = voiceManifest[`${who}|${text.trim()}`];
-    if (!hash) {
+    const hash = clipId(who, text);
+    if (!voiceClips.has(hash)) {
       errors.push(`[缺失语音清单] (${who}) ${text.slice(0, 24)}... 请运行 npm run voice`);
     } else {
       const mp3 = path.join(ROOT, 'public', 'voice', 'clips', `${hash}.mp3`);

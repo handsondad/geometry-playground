@@ -81,15 +81,15 @@ npm run smoke -- <新增或改动的labId>   # 若改动页面外壳/样式则�
 
 - `index.html`、`vite.config.ts`、`tsconfig.json`：Vite 入口与配置（`base: "./"`，适配 GitHub Pages 子路径）
 - `src/main.tsx`、`src/App.tsx`：挂载 React、按路由切换页面、离开页面时停止朗读
-- `src/pages/`：`HomePage`、`HallPage`、`QuestionPage`、`PlayPage`（游乐场与目录）、`MorePages`（进度、对照台、故事）
-- `src/components/`：`Avatar`（小念和爸爸头像）、`Bubble`（对话气泡）、`PageTop`（返回、标题、声音开关）、`TopicCard`（问题卡片）、`QuestionFilm`（问答动画）、`Stories`（几何故事卡与睡前聊天）、`HomeShowcase`（首页轮播：8 秒一张，鼠标悬停或键盘聚焦时暂停，有暂停按钮，减少动态效果时不自动播放）
+- `src/pages/`（除首页外都由 `App.tsx` 用 `React.lazy` 按路由拆包，外层有 `<Suspense>` 和加载失败的重试提示）：`HomePage`、`HallPage`、`QuestionPage`、`PlayPage`（游乐场与目录）、`MorePages`（进度、对照台、故事）
+- `src/components/`：`Avatar`（小念和爸爸头像）、`Bubble`（对话气泡）、`PageTop`（返回、标题、声音开关）、`TopicCard`（问题卡片）、`QuestionFilm`（问答动画）、`Stories`（几何故事卡与睡前聊天）、`MissingPage`（找不到页面）、`HomeShowcase`（首页轮播：8 秒一张，鼠标悬停或键盘聚焦时暂停，有暂停按钮，减少动态效果时不自动播放）
 - `src/showcase-figures.js` & `src/euclid-cover.js`：首页轮播的原生 SVG 画面，颜色取所在展馆的 `--bubble`；画面和读数都由 `src/math.js` / `src/spatial-math.js` 实时算出（`penroseTriangles` 罗宾逊细分、`hyperbolicTiling` 庞加莱圆盘镶嵌与 `diskTranslate` 平移、`timesTableEnvelope` 外摆线包络、`vogelSpiral` / `spiralFamilies` 黄金角螺旋、`platonicSolids` 与 `convexFaces`、`voronoiCells`），离开视野、切到后台或减少动态效果时暂停；等边三角形可拖动 B 点、点按或用方向键
 - `src/lib/`：`catalog.ts`（展馆、问题、对话的类型化视图）、`route.ts`（路由与旧地址跳转）、`progress.ts`（看过 / 点亮记录）、`speech.ts`（朗读状态钩子）、`useLab.ts`（挂载原生 JS 实验）
 - `src/styles/`：`base.css`（配色与按钮）、`lab.css`（画板、各实验图形、挑战与故事卡）、`app.css`（页面外壳，参考 bodyverse）。展馆、问答、游乐场和对照台在 `.page` 上设置 `--bubble`，`app.css` 由它派生 `--hall`、`--hall-soft`、`--hall-line`、`--hall-ink`，并把 `--border-color` 换成展馆色；按钮、卡片、画板边框、读数和滑块都跟着变。空间实验同样用浅色画板，不要再引入深色主题或写死橙色
 - `src/question-catalog.js`：问题标题、小念遇到的生活场景、难度分组、展馆钩子、首页精选、首页轮播的几何明星（`homeShowcase`：`{ id, hall, play: [labId, 按钮文字], name, en, hook, source: [标题, https 链接] }`，每座展馆恰好一张，由 `check-rules.mjs` 校验），以及小挑战的两句固定台词
-- `src/lab-modes.js`：实验 id 到实验函数的映射；`src/hall-theme.js`：展馆配色与图标
+- `src/lab-modes.js`：实验 id 到实验代码 loader 的映射（`loadLabMode` 预取、`requireLabMode` 供 `useLab` 在渲染时取用，未下载完时挂起给 Suspense）。实验代码按需拆包，首页和展馆页不下载；`custom-labs.js` 的条目用 `load: () => import('./labs/<id>.js').then(m => m.<名字>)`，不要静态 import 实验；`src/hall-theme.js`：展馆配色与图标
 - `src/catalog.js` & `src/topics.js` & `src/custom-labs.js`：10 座展馆与实验注册表
-- `src/speech.js` & `src/voice-manifest.js`：双人离线 MP3 队列播放 + `chime()` WebAudio 音效 + 浏览器 TTS 回退
+- `src/speech.js` & `src/voice-manifest.js` & `src/voice-key.js`：双人离线 MP3 队列播放（播上一句时预下载下一句）+ `chime()` WebAudio 音效 + 浏览器 TTS 回退。`voice-manifest.js` 由 `npm run voice` 生成，只列出已录好的片段 id（`voiceClips`），id 是 `sha256("who|text")` 前 12 位，前端用 `voice-key.js` 的 `clipId(who, text)` 同步算出
 - `src/board.js`：SVG 画板底座（坐标变换、拖拽与键盘方向键支持、Web Animations 描线与微弹跳动效）
 - `src/spatial-view.js`：空间实验公用的 SVG 投影、旋转视角、立体面片、双图布局与可中断的逐帧演示；`src/spatial.js`、`src/sphere.js` 复用它把模型和定量对照图联动起来
 - `src/cube-notebook.js`：正方体截面的 A/B 实验记录，只将切面方向和位置存入浏览器，面积与轮廓由 `src/spatial-math.js` 重算

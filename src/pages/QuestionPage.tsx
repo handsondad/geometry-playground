@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import { difficultyLabel } from "../question-catalog.js";
 import { Avatar } from "../components/Avatar";
 import { Bubble } from "../components/Bubble";
+import { MissingPage } from "../components/MissingPage";
 import { PageTop } from "../components/PageTop";
 import { QuestionFilm, type FilmHandle } from "../components/QuestionFilm";
 import { neighbors, themeOf, topicById, turnsFor, type Topic } from "../lib/catalog";
@@ -109,13 +110,4 @@ export function QuestionRoute({ id }: { id: string }) {
   const topic = topicById(id);
   if (!topic) return <MissingPage />;
   return <QuestionPage key={topic.id} topic={topic} />;
-}
-
-export function MissingPage() {
-  return (
-    <div className="page missing">
-      <p>这一页找不到了，可能换了地方。</p>
-      <a className="primary-btn" href={href.home}>回到首页</a>
-    </div>
-  );
 }
